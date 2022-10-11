@@ -1,0 +1,291 @@
+---
+title: 'Bios 6301: Assignment 3'
+author: Dannielle Gibson 
+output: html_document
+---
+
+*Due Tuesday, 27 September, 1:00 PM*
+
+**25/50 (Due to late submission). Please see comments below and let me know if you have any questions. - Tianyi**
+
+50 points total.
+
+Add your name as `author` to the file's metadata section.
+
+Submit a single knitr file (named `homework3.rmd`) by email to tianyi.sun@vanderbilt.edu.
+Place your R code in between the appropriate chunks for each question.
+Check your output by using the `Knit HTML` button in RStudio.
+
+$5^{n=day}$ points taken off for each day late.
+
+### Question 1 ###
+
+**15 points**
+
+Write a simulation to calculate the power for the following study
+design.  The study has two variables, treatment group and outcome.
+There are two treatment groups (0, 1) and they should be assigned
+randomly with equal probability.  The outcome should be a random normal
+variable with a mean of 60 and standard deviation of 20.  If a patient
+is in the treatment group, add 5 to the outcome.  5 is the true
+treatment effect.  Create a linear model for the outcome by the
+treatment group, and extract the p-value (hint: see assigment1).
+Test if the p-value is less than or equal to the alpha level, which
+should be set to 0.05.
+
+Repeat this procedure 1000 times. The power is calculated by finding
+the percentage of times the p-value is less than or equal to the alpha
+level.  Use the `set.seed` command so that the professor can reproduce
+your results.
+
+1. Find the power when the sample size is 100 patients. (10 points)
+power is 1.
+
+```{r}
+
+n <- 100
+mean <- 60
+sd <- 20
+treatment.groups <-c(0,1) 
+t.s <- sample(treatment.groups, n, replace=TRUE)
+outcome<- rnorm(n, mean, sd)
+for (i in 1:n) { 
+  if (t.s[i]==1){
+    outcome[i]<- outcome[i] +5}
+  else {outcome[i] <- outcome[i] }  
+}
+
+set.seed(2) 
+power<- replicate(1e3, { 
+  treatment.groups <-c(0,1) 
+  t.s <- sample(treatment.groups, n, replace=TRUE)
+  outcome <- rnorm(n, mean, sd)
+for (i in 1:n) { 
+  if (t.s [i]==1){
+    outcome[i] <-outcome[i] +5}
+   else {outcome[i] <- outcome[i] }
+   }
+  
+t.test(outcome~ t.s, alternative='two.sided', mu=0 )$p.value
+} <0.05)
+summary (lm (outcome ~ t.s))
+
+power.t.test(n, mean, sd, 0.05, type='one.sample')$power
+
+# TS: One more step to get power
+mean(power)
+```
+
+1. Find the power when the sample size is 1000 patients. (5 points)
+power is 1 
+```{r}
+m <- 1000
+mmean <- 60
+msd <- 20
+treatment.groups <- c(0, 1)
+t.s <- sample(treatment.groups, m, replace=TRUE)
+outcome <- rnorm(m, mean, sd)
+for (i in 1:m) { 
+  if (t.s[i]==1){
+    outcome[i] <-outcome[i] +5}
+   else{outcome[i] <-outcome[i]}
+  }
+
+set.seed(2) 
+power<- replicate(1e3, { 
+  treatment.groups <- c(0, 1)
+  t.s <- sample(treatment.groups, m, replace=TRUE)
+  outcome <- rnorm(m, mmean, msd)
+for (i in 1:m) { 
+  if (t.s [i]==1){
+    outcome[i] <-outcome[i] +5}
+  else{outcome[i] <-outcome[i]}
+  }
+  
+  t.test(outcome~ t.s, alternative='two.sided', mu=0 )$p.value
+} <0.05)
+summary (lm (outcome ~ t.s))
+
+power.t.test(m, mmean, msd, 0.05, type='one.sample')$power
+
+# TS: One more step to get power
+mean(power)
+```
+### Question 2 ###
+
+**14 points**
+
+Obtain a copy of the [football-values lecture](https://github.com/couthcommander/football-values).
+Save the `2021/proj_wr21.csv` file in your working directory.  Read
+in the data set and remove the first two columns.
+
+1. Show the correlation matrix of this data set. (4 points)
+
+```{r}
+getwd()
+proj_wr21<- data.frame(read.csv(file = 'proj_wr21.csv'))         
+df<- proj_wr21[-c(1,2)]
+df
+cor(df, method= c("pearson"))
+```
+
+1. Generate a data set with 30 rows that has a similar correlation
+structure.  Repeat the procedure 1,000 times and return the mean
+correlation matrix. (10 points)
+
+```{r}
+rho<- cor(df)
+vcov<- var(df)
+means<- colMeans(df)
+
+df.sim <- mvrnorm(20, mu = means, Sigma = vcov)
+df.sim = as.data.frame(df.sim)
+
+(rho.sim<- cor(df.sim))   
+rho 
+keep.1=0
+loops=10000
+
+for (i in 1:loops) {
+      df.sim = mvrnorm(20, mu = means, Sigma = vcov)
+      keep.1=keep.1+cor(df.sim)/loops  }
+ keep.1
+```
+
+
+### Question 3 ###
+
+**21 points**
+
+Here's some code:
+
+```{r}
+nDist <- function(n = 100) {
+    df <- 10
+    prob <- 1/3
+    shape <- 1
+    size <- 16
+    list(
+        beta = rbeta(n, shape1 = 5, shape2 = 45),
+        binomial = rbinom(n, size, prob),
+        chisquared = rchisq(n, df),
+        exponential = rexp(n),
+        f = rf(n, df1 = 11, df2 = 17),
+        gamma = rgamma(n, shape),
+        geometric = rgeom(n, prob),
+        hypergeometric = rhyper(n, m = 50, n = 100, k = 8),
+        lognormal = rlnorm(n),
+        negbinomial = rnbinom(n, size, prob),
+        normal = rnorm(n),
+        poisson = rpois(n, lambda = 25),
+        t = rt(n, df),
+        uniform = runif(n),
+        weibull = rweibull(n, shape)
+    )
+}
+```
+
+1. What does this do? (3 points)
+
+    ```{r}
+    round(sapply(nDist(500), mean), 2)
+    ```
+
+**TS: Estimate the mean of several distributions with a given sample size of 500.**
+    
+    ```
+      Sapply is  simplifying the results and converting the list into a vector. The mean of the 500th element in the nDist vector is being rounded to 2 decimal places. 
+      
+    ```
+
+1. What about this? (3 points)
+
+    ```{r}
+    sort(apply(replicate(20, round(sapply(nDist(10000), mean), 2)), 1, sd))
+    
+    ```
+
+
+**TS: Compute the standard deviation on the empirical mean of several distributions with a given sample size of 10000.**   
+
+    ```
+    The mean of the 10000th element in the nDist vector is being rounded to 2 decimal places with 1 standard deviation.The sapply then takes those means from being oriented in a list format to a vector format. Then those results are being repeated 20 times, as the apply command loops through the entire command and finally the sort orgranizes the final results in order from smallest to largest value.
+    ```
+
+    In the output above, a small value would indicate that `N=10,000` would provide a sufficent sample size as to estimate the mean of the distribution. Let's say that a value *less than 0.02* is "close enough".
+
+1. For each distribution, estimate the sample size required to simulate the distribution's mean. (15 points)
+```{r}
+
+nDist <- function(n = 100) {
+    df <- 10
+    prob <- 1/3
+    shape <- 1
+    size <- 16
+    list(
+        beta = rbeta(n, shape1 = 5, shape2 = 45),
+        binomial = rbinom(n, size, prob),
+        chisquared = rchisq(n, df),
+        exponential = rexp(n),
+        f = rf(n, df1 = 11, df2 = 17),
+        gamma = rgamma(n, shape),
+        geometric = rgeom(n, prob),
+        hypergeometric = rhyper(n, m = 50, n = 100, k = 8),
+        lognormal = rlnorm(n),
+        negbinomial = rnbinom(n, size, prob),
+        normal = rnorm(n),
+        poisson = rpois(n, lambda = 25),
+        t = rt(n, df),
+        uniform = runif(n),
+        weibull = rweibull(n, shape)
+    )
+}
+round(sapply(nDist(500), mean), 2)
+
+```
+
+Don't worry about being exact. It should already be clear that N < 10,000 for many of the distributions. You don't have to show your work. Put your answer to the right of the vertical bars (`|`) below.
+
+**TS: Here, our goal is to identify a sample size such that the standard deviation of empirical mean (which is the output in part 2) is less than 0.02. See one solution below**
+```{r}
+samplesize.cal=function (dist.index,start,by){
+    stdtest=200
+    j=1
+    size=start
+    while(stdtest>0.02){
+std=apply(replicate(20, round(sapply(nDist(size), mean), 2)), 1, sd)
+stdtest=std[[dist.index]]
+j=j+1
+size=size+by
+    }
+    output=c(size,stdtest)
+    return(output)
+}
+
+set.seed(321)
+##beta
+size.beta=samplesize.cal(1,1,1)
+##binomial
+size.binom=samplesize.cal(2,1000,30)
+## and try this function with other distributions to find the sufficient sample size
+```
+
+
+
+distribution|N
+---|---
+beta|?
+binomial|?
+chisquared|?
+exponential|?
+f|?
+gamma|?
+geometric|?
+hypergeometric|?
+lognormal|?
+negbinomial|?
+normal|?
+poisson|?
+t|?
+uniform|?
+weibull|?

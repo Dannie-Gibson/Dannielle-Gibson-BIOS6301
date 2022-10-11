@@ -1,0 +1,256 @@
+---
+title: 'Bios 6301: Assignment 1'
+author: "Dannielle Gibson"
+output: html_document
+---
+
+*Due Thursday, 08 September, 1:00 PM*
+
+**50/50, great work! - Tianyi**
+
+50 points total.
+
+Add your name as `author` to the file's metadata section.
+
+Submit a single knitr file (named `homework1.rmd`) by email to tianyi.sun@vanderbilt.edu.
+Place your R code in between the appropriate chunks for each question.
+Check your output by using the `Knit HTML` button in RStudio.
+
+### Create a Data Set
+
+A data set in R is called a data.frame.  This particular data set is
+made of three categorical variables, or factors: `gender`, `smoker`,
+and `exercise`.  In addition `exercise` is an ordered factor.  `age`
+and `los` (length of stay) are continuous variables.
+
+```{r}
+gender <- c('M','M','F','M','F','F','M','F','M')
+age <- c(34, 64, 38, 63, 40, 73, 27, 51, 47)
+smoker <- c('no','yes','no','no','yes','no','no','no','yes')
+exercise <- factor(c('moderate','frequent','some','some','moderate','none','none','moderate','moderate'),
+                    levels=c('none','some','moderate','frequent'), ordered=TRUE
+)
+los <- c(4,8,1,10,6,3,9,4,8)
+x <- data.frame(gender, age, smoker, exercise, los)
+x
+```
+
+### Create a Model
+
+We can create a model using our data set.  In this case I’d like to
+estimate the association between `los` and all remaining variables.
+This means `los` is our dependent variable. The other columns will be
+terms in our model.
+
+The `lm` function will take two arguments, a formula and a data set.
+The formula is split into two parts, where the vector to the left of
+`~` is the dependent variable, and items on the right are terms.
+
+```{r}
+lm(los ~ gender + age + smoker + exercise, dat=x)
+```
+
+1. Looking at the output, which coefficient seems to have the highest
+effect on `los`? (2 points)
+# Gender seems to have the highest effect on 'los'
+
+```
+```
+
+This can be tough because it also depends on the scale of the
+variable.  If all the variables are standardized, then this is not
+the case.
+
+Given that we only have nine observations, it's not really a good idea
+to include all of our variables in the model.  In this case we'd be
+"over-fitting" our data.  Let's only include one term, `gender`.
+
+#### Warning
+
+When choosing terms for a model, use prior research, don't just
+select the variable with the highest coefficient.
+
+2. Create a model using `los` and `gender` and assign it to the
+variable `mod`.  Run the `summary` function with `mod` as its
+argument. (5 points)
+
+```{r}
+mod<-lm(los ~gender)
+summary (mod)
+```
+
+The summary of our model reports the parameter estimates along with
+standard errors, test statistics, and p-values.  This table of
+estimates can be extracted with the `coef` function.
+
+### Estimates
+
+3. What is the estimate for the intercept?  What is the estimate for
+gender?  Use the `coef` function. (3 points)
+#Estimate Intercept is 3.5
+#Estimate for gender is 4.3
+
+```{r}
+coef(summary (mod))
+```
+
+4. The second column of `coef` are standard errors.  These can be
+calculated by taking the `sqrt` of the `diag` of the `vcov` of the
+`summary` of `mod`.  Calculate the standard errors. (3 points)
+
+```{r}
+sqrt(diag(vcov(summary(mod))))
+```
+
+The third column of `coef` are test statistics.  These can be
+calculated by dividing the first column by the second column.
+
+```{r}
+mod <- lm(los ~ gender, dat=x)
+mod.c <- coef(summary(mod))
+mod.c[,1]/mod.c[,2]
+```
+
+The fourth column of `coef` are p values.  This captures the
+probability of observing a more extreme test statistic.  These can be
+calculated with the `pt` function, but you will need the
+degrees-of-freedom.  For this model, there are 7 degrees-of-freedom.
+
+5. Use the `pt` function to calculate the p value for gender.  The first
+argument should be the test statistic for gender.  The second argument
+is the degrees-of-freedom.  Also, set the `lower.tail` argument to
+FALSE.  Finally multiple this result by two. (4 points)
+
+```{r}
+2*pt(2.917110, 7, lower.tail=FALSE)
+```
+
+```{r}
+# From Tianyi: Alternatively you could do
+pt(mod.c[2,3], 7, lower.tail=FALSE)*2
+```
+
+### Predicted Values
+
+The estimates can be used to create predicted values.
+
+```{r}
+3.5+(x$gender=='M')*4.3
+```
+
+6. It is even easier to see the predicted values by passing the model
+`mod` to the `predict` or `fitted` functions.  Try it out. (2 points)
+
+```{r}
+predict (mod)
+fitted (mod)
+```
+
+7. `predict` can also use a new data set.  Pass `newdat` as the second
+argument to `predict`. (3 points)
+
+```{r}
+newdat <- data.frame(gender=c('F','M','F'))
+predict (mod, newdat)
+```
+
+### Residuals
+
+The difference between predicted values and observed values are
+residuals.
+
+8. Use one of the methods to generate predicted values.  Subtract the
+predicted value from the `x$los` column. (5 points)
+
+```{r}
+x$los - (predict(mod))
+```
+
+9. Try passing `mod` to the `residuals` function. (2 points)
+
+```{r}
+residuals (mod)
+```
+
+10. Square the residuals, and then sum these values.  Compare this to the
+result of passing `mod` to the `deviance` function. (6 points)
+
+```{r}
+sum (residuals (mod)^2)
+deviance (mod)
+```
+
+Remember that our model object has two items in the formula, `los`
+and `gender`.  The residual degrees-of-freedom is the number of
+observations minus the number of items to account for in the model
+formula.
+
+This can be seen by passing `mod` to the function `df.residual`.
+
+```{r}
+df.residual(mod)
+```
+
+11. Calculate standard error by dividing the deviance by the
+degrees-of-freedom, and then taking the square root.  Verify that this
+matches the output labeled "Residual standard error" from
+`summary(mod)`. (5 points)
+
+```{r}
+sqrt(33.8/7)
+sqrt ((deviance (mod))/(df.residual(mod)))
+summary (mod)
+```
+
+Note it will also match this output:
+
+```{r}
+predict(mod, se.fit=TRUE)$residual.scale
+```
+
+### T-test
+
+Let's compare the results of our model to a two-sample t-test.  We
+will compare `los` by men and women.
+
+12. Create a subset of `x` by taking all records where gender is 'M'
+and assigning it to the variable `men`.  Do the same for the variable
+`women`. (4 points)
+
+```{r}
+men <- x[which(x$gender=="M"),] 
+women <- x[which(x$gender=="F"),] 
+ 
+```
+
+13. By default a two-sampled t-test assumes that the two groups have
+unequal variances.  You can calculate variance with the `var`
+function.  Calculate variance for `los` for the `men` and `women` data
+sets. (3 points)
+
+```{r}
+var (men$los)
+var (women$los)
+```
+
+14. Call the `t.test` function, where the first argument is `los` for
+women and the second argument is `los` for men.  Call it a second time
+by adding the argument `var.equal` and setting it to TRUE.  Does
+either produce output that matches the p value for gender from the
+model summary? (3 points)
+# The second line aligns with the model summary. 
+
+```{r}
+t.test (women$los, men$los)
+t.test (women$los, men$los, var.equal=TRUE)
+summary (mod)
+```
+
+An alternative way to call `t.test` is to use a formula.
+
+```{r}
+t.test(los ~ gender, dat=x, var.equal=TRUE)
+# compare p-values
+t.test(los ~ gender, dat=x, var.equal=TRUE)$p.value
+coef(summary(lm(los ~ gender, dat=x)))[2,4]
+```

@@ -1,0 +1,81 @@
+---
+title: 'Bios 6301: Assignment 4'
+author: "Dannielle Gibson"
+output:
+  pdf_document: default
+---
+
+*Due Tuesday, 04 October, 1:00 PM*
+
+**20/20. Tianyi**
+
+$5^{n=day}$ points taken off for each day late.
+
+20 points total.
+
+This assignment includes turning in the first three assignments. All three should
+include knitr files (named `homework1.rmd`, `homework2.rmd`, `homework3.rmd`, `homework4.rmd`)
+along with valid PDF output files. Inside each file, clearly indicate which
+parts of your responses go with which problems (you may use the original homework
+document as a template). Add your name as `author` to the file's metadata section.
+Raw R code/output or word processor files are not acceptable.
+
+Failure to properly name files or include author name may result in 5 points taken off.
+
+### Question 1 ###
+
+**10 points**
+
+1. Use GitHub to turn in the first four homework assignments. Make sure the teacher (couthcommander) and TA (tinasunny2018) are collaborators. (5 points)
+
+1. Commit each assignment individually.  This means your repository should have at least four commits. (5 points)
+
+### Question 2 ###
+
+**10 points**
+
+Use \LaTeX to create the following expressions.
+
+$$
+\begin {align*}
+P(B)&= \sum_j P(B|A_j)P(A_j),\\
+&\Rightarrow P(A_i|B)= \frac{P(B|A_i)P(A_i)}{\sum_jP(B|A_j)P(A_j)}
+\end {align*}
+$$
+
+\begin{center}
+Figure\ 1: equation1
+\end{center}
+
+
+
+**Missed an "="**
+\begin{equation}
+\hat{f}(\zeta) = \int_{-\infty}^{\infty} f(x)e^{-2\pi ix(\zeta)} dx
+\end{equation}
+
+
+\begin{center}
+Figure\ 2: equation2 
+\end{center}
+
+
+
+
+
+\begin{equation}
+J= \frac{df}{dx}= \left[ \frac{\partial f}{\partial x_1} ...\frac{\partial f}{\partial
+x_n} \right]= 
+\left[
+\begin {matrix} 
+\frac{\partial f_1}{\partial x_1} & \cdots & \frac{\partial f_1}{\partial x_n}\\
+\vdots & \ddots & \vdots \\
+\frac{\partial f_1}{\partial x_1} & \cdots & \frac{\partial f_m}{\partial x_n} 
+\end{matrix} 
+\right]
+\end{equation}
+
+
+\begin{center}
+Figure\ 3: equation2 
+\end{center}
