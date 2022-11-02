@@ -1,0 +1,247 @@
+---
+title: 'Bios 6301: Assignment 5'
+author: Dannielle Gibson
+output: pdf_document
+---
+
+*Due Thursday, 13 October, 1:00 PM*
+
+$5^{n=day}$ points taken off for each day late.
+
+40 points total.
+
+Submit a single knitr file (named `homework5.rmd`), along with a valid PDF output file. Inside the file, clearly indicate which parts of your responses go with which problems (you may use the original homework document as a template). Add your name as `author` to the file's metadata section. Raw R code/output or word processor files are not acceptable.
+
+Failure to name file `homework5.rmd` or include author name may result in 5 points taken off.
+
+### Question 1 ###
+
+**15 points**
+
+A problem with the Newton-Raphson algorithm is that it needs the derivative $f'$. If the derivative is hard to compute or does not exist, then we can use the *secant method*, which only requires that the function $f$ is continuous.
+
+Like the Newton-Raphson method, the **secant method** is based on a linear approximation to the function $f$. Suppose that $f$ has a root at $a$. For this method we assume that we have *two* current guesses, $x_0$ and $x_1$, for the value of $a$. We will think of $x_0$ as an older guess and we want to replace the pair $x_0$, $x_1$ by the pair $x_1$, $x_2$, where $x_2$ is a new guess.
+
+To find a good new guess x2 we first draw the straight line from $(x_0,f(x_0))$ to $(x_1,f(x_1))$, which is called a secant of the curve $y = f(x)$. Like the tangent, the secant is a linear approximation of the behavior of $y = f(x)$, in the region of the points $x_0$ and $x_1$. As the new guess we will use the x-coordinate $x_2$ of the point at which the secant crosses the x-axis.
+
+The general form of the recurrence equation for the secant method is:
+
+$$x_{i+1} = x_i - f(x_i)\frac{x_i - x_{i-1}}{f(x_i) - f(x_{i-1})}$$
+
+Notice that we no longer need to know $f'$ but in return we have to provide *two* initial points, $x_0$ and $x_1$.
+
+**Write a function that implements the secant algorithm.** Validate your program by finding the root of the function $f(x) = \cos(x) - x$. Compare its performance with the Newton-Raphson method -- which is faster, and by how much?  For this example $f'(x) = -\sin(x) - 1$.
+
+The using the values 1 and 0.5 for x0 and x1 respectively in the Secant method, and using 0.5 for the value of x in the newton raphson results in the secant method being faster. However when the value of x0(for the secant method) and x(for the netwon raphson) are the same value and the x1 (for the secant method) is large then the secant method closer in time to the newton difference.With the values mentioned the secant is faster by 0.0008189678 secs0
+```{r}
+#Secant Method
+x0 <- 1
+x1 <- 0.5
+f<- function(x) {cos(x) - x}  
+plot(f, xlim = c(0.5, 1))
+secant_method<- function(f, x0, X1, tol=1e-9, max_iter=1000){ 
+  iter<- 0
+    while((abs(x1-x0)) >tol) {
+    x2<- x1-(f(x1)*(x1-x0))/ (f(x1)-f(x0))
+    x0<-x1
+    x1<-x2 
+    iter<- iter+1
+    if (iter>max_iter) break 
+    }
+     return (c(x2, iter)) 
+   }
+secant_method(f,x0,x1)
+
+# Newton Raphson Method
+f<- function(x) {cos(x) - x}
+d<- function(x) {-sin(x) - 1}
+x <- 0.5
+newton_raphson <-function(f, x, d, tol=1e-9, n=1000) { 
+  i <- 0
+  while(abs(f(x)) > tol){
+     x<- x - (f(x)/d(x)) 
+    i<- i+1 
+    if (i>n) break 
+  }
+  return (c(x, i))
+}
+newton_raphson(f,x,d)
+
+#Testing Time
+#Secant Time
+start.time <- Sys.time()
+x0 <- 1
+x1 <- 0.5
+f<- function(x) {cos(x) - x}  
+plot(f, xlim = c(0.5, 1))
+secant_method<- function(f, x0, X1, tol=1e-9, max_iter=1000){ 
+  iter<- 0
+    while((abs(x1-x0)) >tol) {
+    x2<- x1-(f(x1)*(x1-x0))/ (f(x1)-f(x0))
+    x0<-x1
+    x1<-x2 
+    iter<- iter+1
+    if (iter>max_iter) break 
+    }
+     x2
+   }
+secant_method(f,x0,x1)
+ 
+end.time <- Sys.time()
+time.taken <- end.time - start.time
+time.taken
+
+#Newton Raphson Time  
+start.time <- Sys.time()
+f<- function(x) {cos(x) - x}
+d<- function(x) {-sin(x) - 1}
+x <- 0.5
+newton_raphson <-function(f, x, d, tol=1e-9, n=1000) { 
+  i <- 0
+  while(abs(f(x)) > tol){
+     x<- x - (f(x)/d(x)) 
+    i<- i+1 
+    if (i>n) break 
+  }
+  x
+}
+newton_raphson(f,x,d)
+end.time <- Sys.time()
+time.taken <- end.time - start.time
+time.taken  
+
+
+```
+
+```{r}
+#Secant Time
+start.time <- Sys.time()
+secant_method(f,x0,x1)
+end.time <- Sys.time()
+time.taken.secant <- end.time - start.time
+time.taken.secant
+
+#Newton Raphson Time  
+start.time <- Sys.time()
+newton_raphson(f,x,d)
+end.time <- Sys.time()
+time.taken.nr <- end.time - start.time
+time.taken.nr
+
+abs(time.taken.secant-time.taken.nr)
+```
+
+
+
+
+### Question 2 ###
+
+**20 points**
+
+The game of craps is played as follows (this is simplified). First, you roll two six-sided dice; let x be the sum of the dice on the first roll. If x = 7 or 11 you win, otherwise you keep rolling until either you get x again, in which case you also win, or until you get a 7 or 11, in which case you lose.
+
+Write a program to simulate a game of craps. You can use the following snippet of code to simulate the roll of two (fair) dice:
+
+1. The instructor should be able to easily import and run your program (function), and obtain output that clearly shows how the game progressed.  Set the RNG seed with `set.seed(100)` and show the output of three games. (lucky 13 points)
+```{r}
+
+set.seed(100)
+iterations=3
+craps_game1 <- function(results=c(TRUE, FALSE)) {
+   roll_1 <- sum(ceiling(6*runif(2)))
+   if (results==TRUE) {print(roll_1)}
+  if (roll_1 == 7 | roll_1 == 11) {
+  if (results==TRUE) {print("You Win")}
+    else {return(1) }
+    }
+  else{
+  roll_again <- sum(ceiling(6*runif(2)))
+  if (results==TRUE) {print(roll_again)}
+  while (roll_again != roll_1 & roll_again != 7 & roll_again != 11){
+roll_again <- sum(ceiling(6*runif(2)))
+if (results==TRUE) {print(roll_again)}
+  }
+  if (roll_again == roll_1) {
+    #print(c(roll_again, ("You rolled the same thing twice, YOU WIN!!!")))
+   if (results==TRUE) {print("You Win")}
+    else {return(1)} 
+  }
+  else {
+    #print(c(roll_again, ("Sorry you lost you rolled")))
+    if (results==TRUE) {print("You Lose")}
+    else {return(0)}
+  }
+  }
+}
+
+ for (i in 1:iterations) { 
+craps_game1(results=TRUE)
+ }
+
+```
+
+
+1. Find a seed that will win ten straight games.  Consider adding an argument to your function that disables output. Show the output of the ten games. (7 points)
+```{r}
+seed <- 1
+i = 0
+while(i!=10){
+  seed <- seed + 1
+  set.seed(seed)
+  i = 0
+   for (j in 1:10) { 
+    output<- craps_game1(results=FALSE)
+    i = i + output
+   }
+}
+
+```
+
+
+
+### Question 3 ###
+
+**5 points**
+
+This code makes a list of all functions in the base package:
+
+``{r
+objs <- mget(ls("package:base"), inherits = TRUE)
+funs <- Filter(is.function, objs)
+formals(funs)
+```
+
+Using this list, write code to answer these questions.
+
+1. Which function has the most arguments? (3 points)
+The Scan function has the most arguments. 
+
+```{r}
+most <- 0
+mostfuns<- NULL
+
+for (i in 1:length(funs)) {
+n  <- length(formals(funs[[i]]))
+  if (n > most) {
+  most <- n 
+  mostfuns <- funs[i]
+  }
+}
+mostfuns
+```
+
+1. How many functions have no arguments? (2 points)
+227 functions have no arguments
+```{r}
+empty <- c()
+for (i in 1:length(funs)) {
+n  <- length(formals(funs[[i]]))
+  if (n == 0) {
+  empty<- append (empty, funs[[i]])
+  }
+}
+length(empty)
+```
+
+
+Hint: find a function that returns the arguments for a given function.
